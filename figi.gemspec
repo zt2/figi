@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.version = Figi::Version.to_s
   gem.date = '2018-11-12'
   gem.authors = ['ztz']
-  gem.email = ['ztz5651483@gmail.com']
+  gem.email = ['hi_ztz@protonmail.com']
   gem.description = 'Figi is a simple and easy ruby config library'
   gem.summary = 'Easy config library'
   gem.homepage = 'https://github.com/zt2/figi'
