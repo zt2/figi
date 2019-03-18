@@ -2,13 +2,35 @@
 
 FIGI is a super simple configuration library you can use in your ruby application.
 
-## Install
+## Installation
 
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'figi'
 ```
-gem install figi
-```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install test
 
 ## Usage
+
+- Support JSON and YAML file
+
+```ruby
+require 'figi'
+
+Figi::Config.from_json('config/config.json')
+Figi::Config.from_yaml('config/config.yml')
+
+puts figi.environment
+# => development
+```
 
 - Method access
 
@@ -51,18 +73,6 @@ puts figi.environment
 # => production
 ```
 
-- Support JSON and YAML file
-
-```ruby
-require 'figi'
-
-Figi::Config.from_json('config/config.json')
-Figi::Config.from_yaml('config/config.yml')
-
-puts figi.environment
-# => development
-```
-
 - Nested method access
 
 ```ruby
@@ -74,3 +84,11 @@ figi.db = {
 puts(figi.db.host) # => localhost
 puts(figi.db.port) # => 27017
 ```
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/zt2/figi.
+
+## License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
