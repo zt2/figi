@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    figi (0.1.0)
+    figi (0.1.1)
       hashie (~> 3.6)
 
 GEM
