@@ -1,4 +1,4 @@
-# FIGI
+# FIGI [![Build Status](https://travis-ci.org/zt2/figi.svg?branch=master)](https://travis-ci.org/zt2/figi)
 
 FIGI is a super simple configuration library you can use in your ruby application.
 
