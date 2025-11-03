@@ -21,12 +21,13 @@ Gem::Specification.new do |gem|
   end
 
   gem.require_paths = ['lib']
+  gem.required_ruby_version = '>= 3.1'
 
-  gem.add_development_dependency 'bundler', '~> 2.0'
-  gem.add_development_dependency 'rake', '~> 10.0'
-  gem.add_development_dependency 'rspec', '~> 3.0'
+  gem.add_development_dependency 'bundler', '~> 2.5'
+  gem.add_development_dependency 'rake', '~> 13.0'
+  gem.add_development_dependency 'rspec', '~> 3.13'
 
-  gem.add_runtime_dependency 'hashie', '~> 3.6'
-  gem.add_runtime_dependency 'listen', '~> 3.0'
-  gem.add_runtime_dependency 'toml-rb', '~> 2.0'
+  gem.add_runtime_dependency 'hashie', '~> 5.0'
+  gem.add_runtime_dependency 'listen', '~> 3.9'
+  gem.add_runtime_dependency 'toml-rb', '~> 2.2'
 end

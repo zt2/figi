@@ -3,14 +3,12 @@ module Figi
   # Version
   #
   module Version
-    MAJOR = '0'.freeze
-    MINOR = '1'.freeze
-    PATCH = '1'.freeze
+    extend self
 
-    class << self
-      def to_s
-        "#{MAJOR}.#{MINOR}.#{PATCH}"
-      end
-    end
+    MAJOR = 0
+    MINOR = 1
+    PATCH = 1
+
+    def to_s = [MAJOR, MINOR, PATCH].join('.')
   end
 end

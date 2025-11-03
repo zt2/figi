@@ -10,7 +10,5 @@ end
 # Support global access
 #
 module Kernel
-  def figi
-    Figi::Config.instance
-  end
+  def figi = Figi::Config.instance
 end
