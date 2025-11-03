@@ -1,94 +1,166 @@
-# FIGI [![Build Status](https://travis-ci.org/zt2/figi.svg?branch=master)](https://travis-ci.org/zt2/figi) [![Known Vulnerabilities](https://snyk.io/test/github/zt2/figi/badge.svg?targetFile=Gemfile.lock)](https://snyk.io/test/github/zt2/figi?targetFile=Gemfile.lock)
+# Figi
 
-FIGI is a super simple configuration library you can use in your ruby application.
+Figi is a lightweight configuration toolkit for Ruby applications. It layers
+configuration from defaults, files, remote providers, environment variables and
+runtime overrides into a single `Hashie::Mash` so you can read settings with a
+natural, Ruby-ish API.
+
+## Highlights
+
+* **Ruby 3 first.** Requires Ruby 3.1+ and embraces modern language features.
+* **Multiple sources.** Merge defaults, JSON/YAML/TOML files, environment
+  variables, remote backends and direct overrides in a deterministic order.
+* **Ergonomic access.** Work with `figi.database.host`, `figi[:database][:host]`
+  or typed getters such as `get_bool` and `get_int`.
+* **Live updates.** Opt-in file watching and remote polling refresh the merged
+  configuration and notify registered callbacks.
+* **Customisable environment bindings.** Define prefixes, separators and manual
+  bindings to translate environment variables into nested config keys.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add Figi to your application's Gemfile:
 
 ```ruby
 gem 'figi'
 ```
 
-And then execute:
+Install the dependency:
 
-    $ bundle
+```bash
+bundle install
+```
 
-Or install it yourself as:
+or grab it directly:
 
-    $ gem install test
+```bash
+gem install figi
+```
 
-## Usage
-
-- Support JSON and YAML file
+## Quick start
 
 ```ruby
 require 'figi'
 
-Figi::Config.from_json('config/config.json')
-Figi::Config.from_yaml('config/config.yml')
+# Provide defaults for missing values.
+Figi::Config.register_defaults do |defaults|
+  defaults.environment = 'development'
+  defaults.database.host = 'localhost'
+end
 
-puts figi.environment
-# => development
+# Load files from ./config/config.yml (YAML, JSON and TOML supported).
+Figi::Config.add_config_path('config')
+Figi::Config.set_config_name('config')
+Figi::Config.read_in_config
+
+# Optionally merge environment variables such as FIGI_DATABASE__PASSWORD.
+Figi::Config.configure_env(separator: '__')
+Figi::Config.load_env
+
+# Inject overrides from the current process.
+Figi::Config.load(environment: 'production')
+
+figi = Figi::Config.instance
+puts figi.environment          #=> "production"
+puts figi.database.host        #=> "localhost"
+puts figi.get_string('app.name', 'MyApp')
 ```
 
-- Method access
+## Loading configuration
+
+### Defaults
+
+Register default values with a block or hash. They are merged first and provide
+structure for the rest of the sources.
 
 ```ruby
-require 'figi'
-
-figi.host = 'localhost'
-puts figi.host
-# => localhost
-
-puts figi.host?
-# => true
- 
-puts figi.not_exists?
-# => false 
+Figi::Config.register_defaults(
+  'logging.level' => 'info',
+  'features.cache' => true
+)
 ```
 
-- Config once, use everywhere
+### Files
+
+By default Figi searches the current working directory for `config.json`,
+`config.yml`, `config.yaml` or `config.toml`. You can point it to additional
+paths or filenames:
 
 ```ruby
-require 'figi'
-
-Figi::Config.load(environment: 'production', username: 'root')
-
-puts figi.environment
-# => production
-puts figi.username
-# => root
+Figi::Config.add_config_path('/etc/my-app')
+Figi::Config.set_config_name('settings')
+Figi::Config.read_in_config
 ```
 
-- Config with DSL
+Pass `watch: true` to `read_in_config` to enable file watching (requires the
+`listen` gem). When files change, Figi reloads them and re-merges the table.
+
+### Environment variables
+
+Environment bindings translate keys such as `FIGI_DATABASE__HOST` into nested
+values. Customise the prefix, separator, formatting and manual mappings:
+
+```ruby
+Figi::Config.configure_env(prefix: 'MY_APP', separator: '__') do |env|
+  env.set_formatter { |segments| segments.map(&:downcase).join('.') }
+  env.bind('LEGACY_TIMEOUT', 'http.timeout') { |value| Integer(value) }
+end
+
+Figi::Config.load_env
+```
+
+### Remote sources
+
+Integrate with arbitrary remote providers by registering a loader block. The
+loader should return a hash-like object and may raise `Figi::ConfigRemoteError`
+for recoverable issues.
+
+```ruby
+Figi::Config.register_remote_source(:vault, interval: 30) do
+  JSON.parse(HTTP.get('https://example.com/config').to_s)
+end
+
+Figi::Config.start_remote_sources
+```
+
+Call `refresh_remote_source(:vault)` to trigger an immediate poll or
+`stop_remote_sources` to halt background threads.
+
+### Runtime overrides
+
+`Figi::Config.load` accepts either a hash or a block that mutates a
+`Hashie::Mash`. These overrides sit at the highest precedence in the merge
+order.
 
 ```ruby
 Figi::Config.load do |config|
-  config.environment = 'production'
-  config.username = 'root'
+  config.features.beta = true
 end
-
-puts figi.environment
-# => production
 ```
 
-- Nested method access
+## Working with values
 
-```ruby
-# nested access
-figi.db = {
-  host: 'localhost',
-  port: 27017
-}
-puts(figi.db.host) # => localhost
-puts(figi.db.port) # => 27017
+* Use method access (`figi.cache.enabled`) or hash access (`figi['cache']['enabled']`).
+* Typed helpers (`get_bool`, `get_int`, `get_float`, `get_array`, `get_hash`) raise
+  `Figi::ConfigTypeError` when the stored value cannot be coerced.
+* Register callbacks with `on_change` to react to live updates from file
+  watchers or remote sources.
+
+## Development
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/zt2/figi.git
+cd figi
+bundle install
 ```
 
-## Contributing
+Run the test suite:
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/zt2/figi.
+```bash
+bundle exec rspec
+```
 
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Pull requests and bug reports are welcome! The project is released under the
+[MIT License](LICENSE).

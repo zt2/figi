@@ -38,20 +38,18 @@ module Figi
     end
 
     def read(env = ENV)
-      result = {}
-
-      env.each do |key, value|
-        if (binding = @bindings[key.to_s])
+      env.each_with_object({}) do |(key, value), result|
+        if (binding = bindings[key.to_s])
           assign(result, binding[:key], transform_value(value, binding[:transformer]))
         elsif auto_binding?(key)
           assign(result, auto_key(key), coerce(value))
         end
       end
-
-      result
     end
 
     private
+
+    attr_reader :bindings, :formatter
 
     def auto_binding?(key)
       return false unless @prefix
@@ -62,7 +60,7 @@ module Figi
     def auto_key(env_key)
       raw = env_key.sub(auto_prefix, '')
       segments = raw.split(@separator)
-      formatted = @formatter ? @formatter.call(segments) : default_formatter(segments)
+      formatted = formatter ? formatter.call(segments) : default_formatter(segments)
       formatted.to_s
     end
 
@@ -84,9 +82,7 @@ module Figi
     end
 
     def transform_value(value, transformer)
-      return transformer.call(value) if transformer
-
-      coerce(value)
+      transformer ? transformer.call(value) : coerce(value)
     end
 
     def coerce(value)
@@ -100,14 +96,14 @@ module Figi
       when /\A[+-]?\d*\.\d+\z/
         string.to_f
       when /\A(true|false)\z/i
-        string.casecmp('true').zero?
+        string.casecmp?('true')
       else
         string
       end
     end
 
     def default_formatter(segments)
-      segments.map { |segment| segment.downcase }.join('.')
+      segments.map { _1.downcase }.join('.')
     end
   end
 end
