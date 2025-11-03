@@ -27,4 +27,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec', '~> 3.0'
 
   gem.add_runtime_dependency 'hashie', '~> 3.6'
+  gem.add_runtime_dependency 'listen', '~> 3.0'
+  gem.add_runtime_dependency 'toml-rb', '~> 2.0'
 end
