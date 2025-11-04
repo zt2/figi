@@ -4,4 +4,11 @@ language: ruby
 cache: bundler
 rvm:
   - 2.6.1
-before_install: gem install bundler -v 2.0.1
+before_install:
+  - gem update --system
+  - gem --version
+  - gem install bundler -v 2.0.1
+  - bundler --version
+install:
+  - bundler install
+script: bundler exec rake
